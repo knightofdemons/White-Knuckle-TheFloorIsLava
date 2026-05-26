@@ -1,0 +1,9 @@
+{
+    "name": "The_Floor_Is_Lava",
+    "version_number": "1.12.1",
+    "website_url": "https://github.com/knightofdemons/White-Knuckle-TheFloorIsLava",
+    "description": "The floor is lava. Separate mod HP, fan-to-cool spots, grip regen on heat, and a hidden facility secret. Requires BepInEx.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2305"
+    ]
+}

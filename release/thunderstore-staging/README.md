@@ -6,7 +6,7 @@
 
 **Author:** [knighToFdemonS](https://github.com/knighToFdemonS)  
 **Game:** [White Knuckle](https://store.steampowered.com/app/3195790/White_Knuckle/) (Steam) · **Version:** 1.12.1  
-**Files:** [`release/`](release/) · [`source/`](source/) · [`TheFloorIsLava/`](TheFloorIsLava/)
+**Repo:** https://github.com/knightofdemons/White-Knuckle-TheFloorIsLava
 
 BepInEx mod. Upward-facing floors get lava patches. You take damage from a **separate mod HP bar**. You can **fan** lava to cool small floor spots.
 
@@ -36,20 +36,21 @@ BepInEx mod. Upward-facing floors get lava patches. You take damage from a **sep
 
 **Manual**
 
-1. Get `TheFloorIsLava.dll` from [`release/`](release/) or the Thunderstore zip.
-2. Copy to:
+1. Copy `plugins/TheFloorIsLava.dll` from this package to:
    ```
    <White Knuckle>/BepInEx/plugins/TheFloorIsLava.dll
    ```
-3. Start the game once. BepInEx creates:
+2. Optional: copy `config/com.thefloorislava.whiteknuckle.cfg` to:
    ```
    BepInEx/config/com.thefloorislava.whiteknuckle.cfg
    ```
+   If you skip this, BepInEx creates a config on first run.
+3. Start the game once.
 4. Remove old **`SpikeBalanceMod.dll`** from `BepInEx/plugins/` if it is still there.
 
-**Thunderstore / mod manager**
+**Mod manager**
 
-Install **The Floor Is Lava** and **BepInExPack**. The package may ship a default config in `BepInEx/config/`. Your existing config is kept on update if you already have one.
+Install this package and **BepInExPack**. Config is applied from the package unless you already have your own.
 
 ---
 
@@ -91,8 +92,6 @@ While standing on lava:
 ## Config
 
 Edit **`BepInEx/config/com.thefloorislava.whiteknuckle.cfg`** with the game **closed**, then restart.
-
-Reference template: [`release/com.thefloorislava.whiteknuckle.cfg`](release/com.thefloorislava.whiteknuckle.cfg)
 
 ### `[Balance]`
 
@@ -162,13 +161,7 @@ Lower-end PCs: raise `RenderDistance` cutoff (e.g. `25`), `SurfaceGridStep` (e.g
 
 ## Build from source
 
-```powershell
-cd TheFloorIsLava
-dotnet build TheFloorIsLava.csproj -c Release -p:GameRoot="C:\Path\To\White Knuckle"
-```
-
-Output: `TheFloorIsLava/bin/Release/TheFloorIsLava.dll`  
-The build also copies the DLL to `<GameRoot>/BepInEx/plugins/` if `GameRoot` points at your install.
+See the [GitHub repository](https://github.com/knightofdemons/White-Knuckle-TheFloorIsLava) for source and build steps.
 
 ---
 
