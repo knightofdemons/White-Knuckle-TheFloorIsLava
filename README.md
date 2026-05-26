@@ -1,14 +1,14 @@
 # 🔥 The Floor Is Lava
 
-> **⚠️ AI disclosure:** A **significant part** of this mod was written with help from **[Cursor AI](https://cursor.com)** (code, debugging, docs). Upload and use it with that in mind.
+> **⚠️ AI disclosure:** A **significant part** of this mod was written with help from **[Cursor AI](https://cursor.com)** (code, debugging, docs). **Download** and use it with that in mind.
 
-<sub>**Personal note:** I am not a C# / Unity developer. I did not have the skill or time to build this mod entirely on my own, so I used AI as a development tool. If you like the idea, you are welcome to **remake it in your own style and code** — I have no problem with that.</sub>
+<sub>**Personal note:** I'm not a C# or Unity developer. I used AI because I couldn't realistically build and debug this on my own in the time I had. If you want to make your own "floor is lava" mod for White Knuckle — different code, different balance, whatever — that's fine by me.</sub>
 
 **Author:** [knighToFdemonS](https://github.com/knighToFdemonS)  
 **Game:** [White Knuckle](https://store.steampowered.com/app/3195790/White_Knuckle/) (Steam) · **Version:** 1.12.1  
 **Files:** [`release/`](release/) · [`source/`](source/) · [`TheFloorIsLava/`](TheFloorIsLava/)
 
-BepInEx mod. Upward-facing floors get lava patches. You take damage from a **separate mod HP bar**. You can **fan** lava to cool small floor spots.
+BepInEx mod. Upward-facing floors get lava patches. Lava drains an **extra health bar**. You can **fan** lava to cool small floor spots.
 
 ---
 
@@ -17,7 +17,7 @@ BepInEx mod. Upward-facing floors get lava patches. You take damage from a **sep
 | | |
 |---|---|
 | 🌋 **Lava** | Lava on upward floors, landings, and similar surfaces — not on handholds or props |
-| ❤️ **Mod HP** | Own health pool + bar at the **bottom center** of the screen |
+| ❤️ **Extra health** | Separate health pool + bar at the **bottom center** of the screen |
 | 🤲 **Grip** | Lava does **not** drain vanilla hand stamina; grip **regenerates** while you stand on lava |
 | 💨 **Fanning** | Press/release grab on lava to cool a fixed spot; stand on cooled ground to avoid damage |
 | ⚙️ **Config** | Most balance, visuals, fanning, and performance settings in one `.cfg` file |
@@ -27,17 +27,14 @@ BepInEx mod. Upward-facing floors get lava patches. You take damage from a **sep
 ## Requirements
 
 - **White Knuckle** (Steam)
-- **[BepInEx 5](https://docs.bepinex.dev/)** in your game folder  
-  Thunderstore dependency: `BepInEx-BepInExPack-5.4.2305`
+- **[BepInEx 5](https://docs.bepinex.dev/)** in your game folder
 
 ---
 
 ## Installation
 
-**Manual**
-
-1. Get `TheFloorIsLava.dll` from [`release/`](release/) or the Thunderstore zip.
-2. Copy to:
+1. Download **`TheFloorIsLava.dll`** from [`release/TheFloorIsLava.dll`](release/TheFloorIsLava.dll).
+2. Copy it to:
    ```
    <White Knuckle>/BepInEx/plugins/TheFloorIsLava.dll
    ```
@@ -47,9 +44,7 @@ BepInEx mod. Upward-facing floors get lava patches. You take damage from a **sep
    ```
 4. Remove old **`SpikeBalanceMod.dll`** from `BepInEx/plugins/` if it is still there.
 
-**Thunderstore / mod manager**
-
-Install **The Floor Is Lava** and **BepInExPack**. The package may ship a default config in `BepInEx/config/`. Your existing config is kept on update if you already have one.
+Optional: [`release/com.thefloorislava.whiteknuckle.cfg`](release/com.thefloorislava.whiteknuckle.cfg) is a config template. Your existing config is kept when you update the DLL.
 
 ---
 
@@ -58,21 +53,21 @@ Install **The Floor Is Lava** and **BepInExPack**. The package may ship a defaul
 ### Run start
 
 - The mod starts when a **campaign run** begins.
-- A **mod HP bar** appears at the **bottom center** of the screen.
-- It tracks **mod HP only**, not vanilla health or grip.
+- An **extra health bar** appears at the **bottom center** of the screen.
+- It tracks **extra health only**, not vanilla health or grip.
 
 ### Lava damage
 
 - Glowing patches mark lava on **horizontal / upward** surfaces.
-- Stand on lava → **mod HP** goes down over time.
+- Stand on lava → **extra health** goes down over time.
 - **Hand stamina is not drained** by lava contact.
-- Walls, handholds, and beams you climb are unchanged unless they are treated as upward floor.
+- Walls, handholds, and beams you climb are unchanged unless they count as upward floor.
 
 ### Stay alive
 
 - **Grip regen:** On lava, hand stamina slowly refills.
-- **HP regen:** After a short time **without lava damage**, mod HP refills. Works on cooled fan spots too (no damage = regen can start).
-- **Death:** Mod HP at **0** ends the run through the normal death flow.
+- **HP regen:** After a short time **without lava damage**, extra health refills. Works on cooled fan spots too (no damage = regen can start).
+- **Death:** Extra health at **0** ends the run through the normal death flow.
 
 ### Fanning (cool spots)
 
@@ -92,15 +87,13 @@ While standing on lava:
 
 Edit **`BepInEx/config/com.thefloorislava.whiteknuckle.cfg`** with the game **closed**, then restart.
 
-Reference template: [`release/com.thefloorislava.whiteknuckle.cfg`](release/com.thefloorislava.whiteknuckle.cfg)
-
 ### `[Balance]`
 
 | Key | What it does |
 |-----|----------------|
-| `MaxHealth` | Mod HP maximum |
-| `LavaDamagePerSecond` | Mod HP lost per second on hot lava |
-| `HealthRegenPerSecond` | Mod HP healed per second after regen starts |
+| `MaxHealth` | Extra health maximum |
+| `LavaDamagePerSecond` | Extra health lost per second on hot lava |
+| `HealthRegenPerSecond` | Extra health healed per second after regen starts |
 | `HealthRegenDelay` | Seconds without lava damage before HP regen |
 | `GripRegenPerSecond` | Hand stamina regen per second while on lava |
 
@@ -160,20 +153,31 @@ Lower-end PCs: raise `RenderDistance` cutoff (e.g. `25`), `SurfaceGridStep` (e.g
 
 ---
 
+## Field note
+
+Maintenance logs mention climbers who **could not bear the warning light** above the molten deck.
+
+> *Bow to the glow. Grip the rail with both hands as if your life depended on it — hold steady. Some say the extra health bar tears loose. Some say the heat stops counting.*
+
+`[EasterEgg] Enabled` only turns this on or off. It does not explain the gesture.
+
+---
+
 ## Build from source
 
 ```powershell
 cd TheFloorIsLava
-dotnet build TheFloorIsLava.csproj -c Release -p:GameRoot="C:\Path\To\White Knuckle"
+dotnet build TheFloorIsLava.csproj -c Release
 ```
 
-Output: `TheFloorIsLava/bin/Release/TheFloorIsLava.dll`  
-The build also copies the DLL to `<GameRoot>/BepInEx/plugins/` if `GameRoot` points at your install.
+Output: `TheFloorIsLava/bin/Release/TheFloorIsLava.dll` — copy that file into `BepInEx/plugins/` yourself.
 
 ---
 
 ## Disclaimer
 
-Free, open-source fan mod. **No warranty.** Use at your own risk.
+This is an **unofficial fan mod** for White Knuckle. It is **not** affiliated with or endorsed by the game's developers.
 
-You may use, copy, modify, and redistribute this project. **White Knuckle** and related assets belong to their owners. This mod is **not** official or endorsed.
+Provided free and open source. **No warranty.** Use at your own risk.
+
+You may use, copy, modify, and redistribute this project. **White Knuckle** and related assets belong to their owners.
