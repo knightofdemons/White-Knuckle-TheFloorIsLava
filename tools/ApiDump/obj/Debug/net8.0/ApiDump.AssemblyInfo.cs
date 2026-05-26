@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiDump")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bed64d361f6510284a606a2e7cee106b65b83374")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3d18b5d2f0967ffbbfa6bca127b7a2898903f41f")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiDump")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiDump")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -123,6 +123,8 @@ Edit **`BepInEx/config/com.thefloorislava.whiteknuckle.cfg`** with the game **cl
 | `FullCoolStaminaFraction` | Total grip budget to fully cool one spot (fraction of one hand’s max grip) |
 | `CoolPerCycleSingleHand` / `CoolPerCycleBothHands` | Heat removed per fan cycle |
 | `BothHandsSyncWindow` | Max seconds between both hands for a dual-hand cycle |
+| `SpotLookupPadding` / `SpotLookupMergeFactor` | Overlap test radius for cooled spots |
+| `FullyCooledThreshold` / `RecentCoolWindow` | When a spot counts as cold and when reheat starts |
 | `SpotRadius` | Radius of a cooled spot |
 | `SpotMergeRadius` | Distance to merge new cooling into an old spot |
 | `SpotMaxCount` | Max cooled spots tracked |
@@ -150,6 +152,9 @@ Lower-end PCs: raise `RenderDistance` cutoff (e.g. `25`), `SurfaceGridStep` (e.g
 | Key | What it does |
 |-----|----------------|
 | `Enabled` | Toggle optional hidden content |
+| `HoldDuration` | Seconds to hold the gesture |
+| `LookDownThreshold` | Camera forward.y must be below this |
+| `AnimDuration` | Rip animation length in seconds |
 
 ---
 
@@ -158,8 +163,6 @@ Lower-end PCs: raise `RenderDistance` cutoff (e.g. `25`), `SurfaceGridStep` (e.g
 Maintenance logs mention climbers who **could not bear the warning light** above the molten deck.
 
 > *Bow to the glow. Grip the rail with both hands as if your life depended on it — hold steady. Some say the extra health bar tears loose. Some say the heat stops counting.*
-
-`[EasterEgg] Enabled` only turns this on or off. It does not explain the gesture.
 
 ---
 

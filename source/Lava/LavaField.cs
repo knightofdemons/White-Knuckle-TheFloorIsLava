@@ -28,7 +28,6 @@ internal sealed class LavaField
     private Material? _lavaDripMaterial;
 
     public int Count => _zones.Count;
-    public int SurfaceCount => _surfaces.Count;
 
     public LavaField(Config cfg) => _cfg = cfg;
 
@@ -355,7 +354,9 @@ internal sealed class LavaField
     /// </summary>
     private void SpawnZone(Collider host, Vector3 surface, float spacing, Scene scene)
     {
-        var zoneRadius = Mathf.Clamp(spacing * 0.5f, 0.45f, 0.85f);
+        var zoneRadius = Mathf.Clamp(spacing * 0.5f * _cfg.VisualScale.Value, 0.45f, 0.85f);
+        var jitter = 1f + (Mathf.PerlinNoise(surface.x * 1.3f, surface.z * 1.3f) - 0.5f) * 2f * _cfg.LavaScaleJitter.Value;
+        zoneRadius *= jitter;
         var pos = surface + Vector3.up * 0.01f;
         var cell = CellKey(pos, spacing);
         if (!_cells.Add(cell))
@@ -398,13 +399,15 @@ internal sealed class LavaField
         var texScale = _cfg.TextureWorldScale.Value;
         var enableDrips = _cfg.LavaDrips.Value;
         var thinThr = _cfg.ThinFloorThreshold.Value;
+        var shapeJitter = _cfg.LavaShapeJitter.Value;
+        var heightVariance = _cfg.LavaHeightVariance.Value;
 
         foreach (var id in _dirtySurfaces)
         {
             if (!_surfaces.TryGetValue(id, out var s))
                 continue;
             s.Rebuild(_lavaBaseMaterial, _lavaGlowMaterial, _lavaDripMaterial,
-                gridStep, influence, texScale, enableDrips, thinThr);
+                gridStep, influence, texScale, enableDrips, thinThr, shapeJitter, heightVariance);
         }
         _dirtySurfaces.Clear();
     }
@@ -471,28 +474,6 @@ internal sealed class LavaField
         return touched;
     }
 
-    public void PruneFar(Vector3 playerPos, float maxDistance)
-    {
-        if (_zones.Count < _cfg.MaxZones.Value * 0.9f)
-            return;
-
-        var maxSq = maxDistance * maxDistance;
-        for (var i = _zones.Count - 1; i >= 0; i--)
-        {
-            var z = _zones[i];
-            if (z == null)
-            {
-                _zones.RemoveAt(i);
-                continue;
-            }
-            if ((z.transform.position - playerPos).sqrMagnitude > maxSq)
-            {
-                Object.Destroy(z.gameObject);
-                _zones.RemoveAt(i);
-            }
-        }
-    }
-
     private static long CellKey(Vector3 p, float spacing)
     {
         unchecked
@@ -540,7 +521,8 @@ internal sealed class LavaField
         }
 
         public void Rebuild(Material? baseMat, Material? glowMat, Material? dripMat,
-            float gridStep, float influence, float texScale, bool enableDrips, float thinThreshold)
+            float gridStep, float influence, float texScale, bool enableDrips, float thinThreshold,
+            float shapeJitter, float heightVariance)
         {
             if (Collider == null || Root == null || baseMat == null) return;
             if (ZonePositions.Count == 0) return;
@@ -550,11 +532,8 @@ internal sealed class LavaField
             Center = b.center;
             Root.transform.position = Center;
 
-            // Mesh has TWO submeshes pointing to the same triangle list so Unity
-            // can render the same geometry twice with two materials (base then
-            // glow overlay) in a single MeshRenderer.
             var newMesh = LavaSurfaceMesh.Build(b, ZonePositions, gridStep, influence,
-                texScale, Center);
+                texScale, Center, shapeJitter, heightVariance);
             if (newMesh == null) return;
 
             if (Mesh != null) Object.Destroy(Mesh);
@@ -645,7 +624,7 @@ internal sealed class LavaField
     private static class LavaSurfaceMesh
     {
         public static Mesh? Build(Bounds b, List<Vector3> zones, float gridStep,
-            float influence, float texScale, Vector3 localOrigin)
+            float influence, float texScale, Vector3 localOrigin, float shapeJitter, float heightVariance)
         {
             // Restrict the grid to the rectangle that actually contains zones (plus
             // the influence radius). That keeps the mesh small even on huge floors.
@@ -718,6 +697,7 @@ internal sealed class LavaField
                     var ripple = Mathf.PerlinNoise(wx * 0.6f + 13f, wz * 0.6f + 7f);
                     var rippleAlt = Mathf.PerlinNoise(wx * 1.7f + 91f, wz * 1.7f + 41f) * 0.4f;
                     var edgeMod = Mathf.Lerp(0.7f, 1.25f, ripple) + (rippleAlt - 0.2f) * 0.4f;
+                    edgeMod = Mathf.Lerp(1f, edgeMod, shapeJitter);
                     coverage = Mathf.Clamp01(coverage * edgeMod);
 
                     // The base material does alpha-cutout at 0.45, so coverage
@@ -729,7 +709,8 @@ internal sealed class LavaField
                     coverage = Mathf.Clamp01((coverage - 0.18f) * 1.7f);
                     if (coverage < 0.05f) coverage = 0f;
 
-                    verts[idx] = new Vector3(wx - localOrigin.x, vy - localOrigin.y + 0.02f, wz - localOrigin.z);
+                    var heightNoise = (Mathf.PerlinNoise(wx * 0.8f + 17f, wz * 0.8f + 31f) - 0.5f) * 2f * heightVariance;
+                    verts[idx] = new Vector3(wx - localOrigin.x, vy - localOrigin.y + 0.02f + heightNoise, wz - localOrigin.z);
                     uvs[idx] = new Vector2(wx * texScale, wz * texScale);
                     colors[idx] = new Color(1f, 1f, 1f, coverage);
                 }

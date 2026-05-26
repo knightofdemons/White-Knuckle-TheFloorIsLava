@@ -18,3 +18,24 @@ c:\Users\TFS\Documents\projects\White Knuckle Mod\tools\ApiDump\obj\Debug\net8.0
 c:\Users\TFS\Documents\projects\White Knuckle Mod\tools\ApiDump\obj\Debug\net8.0\ApiDump.pdb
 c:\Users\TFS\Documents\projects\White Knuckle Mod\tools\ApiDump\obj\Debug\net8.0\ApiDump.genruntimeconfig.cache
 c:\Users\TFS\Documents\projects\White Knuckle Mod\tools\ApiDump\obj\Debug\net8.0\ref\ApiDump.dll
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\bin\Debug\net8.0\ApiDump.exe
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\bin\Debug\net8.0\ApiDump.deps.json
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\bin\Debug\net8.0\ApiDump.runtimeconfig.json
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\bin\Debug\net8.0\ApiDump.dll
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\bin\Debug\net8.0\ApiDump.pdb
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\bin\Debug\net8.0\Mono.Cecil.Mdb.dll
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\bin\Debug\net8.0\Mono.Cecil.Pdb.dll
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\bin\Debug\net8.0\Mono.Cecil.Rocks.dll
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\bin\Debug\net8.0\Mono.Cecil.dll
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\ApiDump.csproj.AssemblyReference.cache
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\ApiDump.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\ApiDump.AssemblyInfoInputs.cache
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\ApiDump.AssemblyInfo.cs
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\ApiDump.csproj.CoreCompileInputs.cache
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\ApiDump.sourcelink.json
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\ApiDump.csproj.Up2Date
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\ApiDump.dll
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\refint\ApiDump.dll
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\ApiDump.pdb
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\ApiDump.genruntimeconfig.cache
+C:\Users\TFS\Documents\GitHub\White-Knuckle-TheFloorIsLava\tools\ApiDump\obj\Debug\net8.0\ref\ApiDump.dll

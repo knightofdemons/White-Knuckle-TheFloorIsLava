@@ -3,43 +3,33 @@ using UnityEngine;
 
 namespace TheFloorIsLava;
 
-/// <summary>
-/// Fan lava by repeatedly pressing/releasing grab while standing on it.
-/// Cools a radial spot under the player; damage scales with local heat.
-/// </summary>
 internal sealed class FanningSystem
 {
     private readonly Config _cfg;
     private readonly List<CoolingSpot> _spots = new();
-
     private readonly HandCycleTracker _hand0 = new();
     private readonly HandCycleTracker _hand1 = new();
 
-    private int _completedCycles;
+    private int _warmupCycles;
     private float _hand0LastCycleTime = -999f;
     private float _hand1LastCycleTime = -999f;
-    private float _lastCoolCycleTime = -999f;
     private bool _wasOnLava;
-    private float _standingHeat = 1f;
     private CoolingSpot? _attachedSpot;
 
     private static Material? _patchMaterial;
 
-    public int CompletedCycles => _completedCycles;
+    public int WarmupCycles => _warmupCycles;
     public int SpotCount => _spots.Count;
-    public float StandingHeat => _standingHeat;
     public float AttachedHeat => _attachedSpot?.Heat ?? 1f;
 
     public FanningSystem(Config cfg) => _cfg = cfg;
 
     public void Reset()
     {
-        _completedCycles = 0;
+        _warmupCycles = 0;
         _hand0LastCycleTime = -999f;
         _hand1LastCycleTime = -999f;
-        _lastCoolCycleTime = -999f;
         _wasOnLava = false;
-        _standingHeat = 1f;
         _attachedSpot = null;
         ModState.LavaHeatMultiplier = 1f;
         _hand0.Reset();
@@ -47,12 +37,10 @@ internal sealed class FanningSystem
         ClearSpots();
     }
 
-    /// <summary>Tick fanning simulation and return lava damage heat [0 = none, 1 = full DPS].</summary>
     public float Tick(ENT_Player player, float dt, bool onLava)
     {
         if (!_cfg.FanningEnabled.Value)
         {
-            _standingHeat = 1f;
             _attachedSpot = null;
             return 1f;
         }
@@ -61,12 +49,11 @@ internal sealed class FanningSystem
         {
             if (_wasOnLava)
             {
-                _completedCycles = 0;
+                _warmupCycles = 0;
                 _hand0.Reset();
                 _hand1.Reset();
             }
             _wasOnLava = false;
-            _standingHeat = 1f;
             _attachedSpot = null;
             UpdateSpots(dt);
             return 1f;
@@ -89,27 +76,15 @@ internal sealed class FanningSystem
 
         UpdateSpots(dt);
         RefreshAttachedSpot(player);
-
-        var feet = GameRefs.FeetPosition(player);
-        var body = player.transform.position;
-        _standingHeat = GetDamageHeatMultiplier(feet, body);
-        return _standingHeat;
+        return GetDamageHeatMultiplier(GameRefs.FeetPosition(player), player.transform.position);
     }
 
-    /// <summary>Heat at player position [0 = no damage, 1 = full DPS].</summary>
-    public float GetEffectiveHeatAt(Vector3 feet, Vector3 body) =>
-        GetDamageHeatMultiplier(feet, body);
-
-    /// <summary>Lowest heat among cooled spots overlapping the player's feet/body.</summary>
     public float GetDamageHeatMultiplier(Vector3 feet, Vector3 body)
     {
         if (_spots.Count == 0)
             return 1f;
 
-        var spotR = _cfg.FanningSpotRadius.Value;
-        var lookupR = Mathf.Max(spotR + 0.55f, _cfg.FanningSpotMergeRadius.Value * 0.85f);
-        var lookupSq = lookupR * lookupR;
-
+        var lookupSq = SpotLookupRadiusSq();
         var heat = 1f;
         var hit = false;
         foreach (var spot in _spots)
@@ -123,13 +98,19 @@ internal sealed class FanningSystem
         return hit ? Mathf.Clamp01(heat) : 1f;
     }
 
-    /// <summary>Track which fixed spot (if any) the player is currently standing in.</summary>
+    private float SpotLookupRadiusSq()
+    {
+        var spotR = _cfg.FanningSpotRadius.Value;
+        var pad = _cfg.FanningSpotLookupPadding.Value;
+        var lookupR = Mathf.Max(spotR + pad, _cfg.FanningSpotMergeRadius.Value * _cfg.FanningSpotLookupMergeFactor.Value);
+        return lookupR * lookupR;
+    }
+
     private void RefreshAttachedSpot(ENT_Player player)
     {
         var feet = GameRefs.FeetPosition(player);
         var body = player.transform.position;
-        var lookupR = Mathf.Max(_cfg.FanningSpotRadius.Value + 0.55f, _cfg.FanningSpotMergeRadius.Value * 0.85f);
-        var lookupSq = lookupR * lookupR;
+        var lookupSq = SpotLookupRadiusSq();
 
         _attachedSpot = null;
         var bestDist = float.MaxValue;
@@ -153,10 +134,6 @@ internal sealed class FanningSystem
         return Mathf.Abs(Time.time - otherTime) <= sync;
     }
 
-    /// <summary>
-    /// Grip cost per fan cycle so a full cool (heat 1→0) totals
-    /// FullCoolStaminaFraction × one hand's max grip.
-    /// </summary>
     private float GetGripCostPerCycle(object hand, bool bothHands)
     {
         var maxGrip = GameRefs.GetGripStrengthMax(hand);
@@ -165,8 +142,6 @@ internal sealed class FanningSystem
             : _cfg.FanningCoolPerCycleSingle.Value;
         var cyclesToFullCool = Mathf.Max(1, Mathf.CeilToInt(1f / coolPerCycle));
         var totalBudget = maxGrip * _cfg.FanningFullCoolStaminaFraction.Value;
-
-        // Both hands: split total budget across both hands each cycle.
         return bothHands
             ? totalBudget / (cyclesToFullCool * 2f)
             : totalBudget / cyclesToFullCool;
@@ -174,7 +149,6 @@ internal sealed class FanningSystem
 
     private void OnFanCycle(ENT_Player player, int handIndex, object primaryHand, object? otherHand, bool bothHands)
     {
-        _completedCycles++;
         var now = Time.time;
 
         if (handIndex == 0) _hand0LastCycleTime = now;
@@ -185,9 +159,10 @@ internal sealed class FanningSystem
             _hand1LastCycleTime = now;
         }
 
-        if (_completedCycles < _cfg.FanningActivationCycles.Value)
+        if (_warmupCycles < _cfg.FanningActivationCycles.Value)
         {
-            Plugin.LogInfo($"Fanning: warmup {_completedCycles}/{_cfg.FanningActivationCycles.Value}");
+            _warmupCycles++;
+            Plugin.LogInfo($"Fanning: warmup {_warmupCycles}/{_cfg.FanningActivationCycles.Value}");
             return;
         }
 
@@ -196,14 +171,20 @@ internal sealed class FanningSystem
             : _cfg.FanningCoolPerCycleSingle.Value;
         var gripCost = GetGripCostPerCycle(primaryHand, bothHands);
 
+        if (GameRefs.GetGripStrength(primaryHand) < gripCost)
+            return;
+
+        if (bothHands && otherHand != null && GameRefs.GetGripStrength(otherHand) < gripCost)
+            return;
+
         if (!GameRefs.DamageGripOnHand(primaryHand, gripCost))
+            return;
+
+        if (bothHands && otherHand != null && !GameRefs.DamageGripOnHand(otherHand, gripCost))
         {
-            Plugin.LogInfo($"Fanning: not enough grip ({GameRefs.GetGripStrength(primaryHand):F1} < {gripCost:F1})");
+            GameRefs.AddGripToHand(primaryHand, gripCost);
             return;
         }
-
-        if (bothHands && otherHand != null)
-            GameRefs.DamageGripOnHand(otherHand, gripCost);
 
         var feet = GameRefs.FeetPosition(player);
         var surface = SampleSurface(feet);
@@ -212,15 +193,7 @@ internal sealed class FanningSystem
         spot.LastFanTime = now;
         spot.UpdateVisual(_cfg.FanningSpotRadius.Value);
         _attachedSpot = spot;
-
-        _lastCoolCycleTime = now;
         GustEffect.Play(player, handIndex, bothHands);
-
-        Plugin.LogInfo(
-            $"Fanning: spotHeat={spot.Heat:F2} gripCost={gripCost:F1} " +
-            $"(maxGrip={GameRefs.GetGripStrengthMax(primaryHand):F0}, " +
-            $"fullCoolBudget={GameRefs.GetGripStrengthMax(primaryHand) * _cfg.FanningFullCoolStaminaFraction.Value:F0}) " +
-            $"spots={_spots.Count}");
     }
 
     private CoolingSpot GetOrCreateSpot(Vector3 anchor, (Vector3 point, Vector3 normal) surface)
@@ -268,15 +241,14 @@ internal sealed class FanningSystem
             ? 1f / _cfg.FanningHeatRecoveryTime.Value
             : 0.25f;
         var radius = _cfg.FanningSpotRadius.Value;
+        var cooledThreshold = _cfg.FanningFullyCooledThreshold.Value;
+        var recentWindow = _cfg.FanningRecentCoolWindow.Value;
 
         for (var i = _spots.Count - 1; i >= 0; i--)
         {
             var spot = _spots[i];
-
-            // Per-spot timing: partial spots reheat once fanning stops; fully cooled spots
-            // wait HeatRecoveryDelay seconds after the last cool on that spot.
-            var cooledRecently = Time.time - spot.LastFanTime < 0.35f;
-            var fullyCooled = spot.Heat <= 0.01f;
+            var cooledRecently = Time.time - spot.LastFanTime < recentWindow;
+            var fullyCooled = spot.Heat <= cooledThreshold;
             var canRecover = !cooledRecently
                 && (!fullyCooled || Time.time - spot.LastFanTime >= delay);
             if (canRecover)
@@ -385,12 +357,6 @@ internal sealed class FanningSystem
             ApplyTransform(surfacePoint, normal);
         }
 
-        public void SetAnchor(Vector3 anchor, Vector3 surfacePoint, Vector3 normal)
-        {
-            Center = new Vector3(anchor.x, surfacePoint.y, anchor.z);
-            ApplyTransform(surfacePoint, normal);
-        }
-
         public float DistanceSqXZ(Vector3 pos)
         {
             var dx = pos.x - Center.x;
@@ -411,19 +377,14 @@ internal sealed class FanningSystem
 
         public void UpdateVisual(float radius)
         {
-            // coolStrength: 1 = fully cooled (dark mask), 0 = fully reheated (gone).
             var coolStrength = 1f - Heat;
             var diameter = radius * 2f;
-
-            // Gradual fade-out as heat rises: shrink + lighten + dim emission.
             var fade = Mathf.SmoothStep(0f, 1f, coolStrength);
             var fadeOut = Heat > 0.9f ? Mathf.InverseLerp(1f, 0.9f, Heat) : 1f;
             var scale = diameter * Mathf.Lerp(0.25f, 1f, fade) * fadeOut;
             _visual.transform.localScale = new Vector3(scale, 0.008f, scale);
-
             _renderer.enabled = fadeOut > 0.02f;
 
-            // Light grey when reheating → dark grey when fully cooled.
             var hotGrey = new Color(0.62f, 0.62f, 0.65f);
             var coldGrey = new Color(0.22f, 0.22f, 0.26f);
             var grey = Color.Lerp(hotGrey, coldGrey, fade * fadeOut);
@@ -445,7 +406,6 @@ internal sealed class FanningSystem
     }
 }
 
-/// <summary>Visible emissive puff burst at the fanning hand(s).</summary>
 internal static class GustEffect
 {
     private static readonly List<GustPuff> _active = new();
@@ -474,7 +434,6 @@ internal static class GustEffect
         var right = cam != null ? cam.transform.right : player.transform.right;
         var mat = BuildMaterial();
 
-        // Small puffs blown downward toward the lava under the hand.
         for (var i = 0; i < 5; i++)
         {
             var spread = (i - 2) * 0.12f;
@@ -490,7 +449,6 @@ internal static class GustEffect
         if (model != null)
             return model.position;
 
-        // Fallback when handModel isn't available: approximate first-person hand height.
         var cam = Camera.main;
         if (cam != null)
         {

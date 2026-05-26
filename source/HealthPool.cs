@@ -5,10 +5,10 @@ namespace TheFloorIsLava;
 internal sealed class HealthPool
 {
     public float Current { get; private set; }
-    public float Max { get; private set; } = 100f;
+    public float Max { get; private set; }
     public bool Dead => Current <= 0f;
 
-    public void Reset(float max = 100f)
+    public void Reset(float max)
     {
         Max = max;
         Current = max;

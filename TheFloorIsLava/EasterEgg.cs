@@ -2,22 +2,9 @@ using UnityEngine;
 
 namespace TheFloorIsLava;
 
-/// <summary>
-/// "Rip the HP bar out of the screen" easter egg.
-///
-/// Gesture: look straight down + crouch + press both grab buttons. Holding the
-/// gesture for 1 second triggers a short "rip" animation on the UI bar (shake
-/// → stretch + pull → fade), after which the bar becomes a slim, translucent
-/// 3D tablet spawned at the player's feet. The tablet is built on top of an
-/// existing CL_Prop clone so the game's hand-interaction system can pick it
-/// up and throw it like any other in-world prop. Lava damage is disabled for
-/// the rest of the run.
-/// </summary>
 internal sealed class EasterEgg
 {
-    private const float HoldDuration = 1.0f;
-    private const float LookDownThreshold = -0.90f;
-    private const float AnimDuration = 1.0f;
+    private readonly Config _cfg;
 
     private float _conditionTime;
     private bool _triggered;
@@ -25,19 +12,9 @@ internal sealed class EasterEgg
     private bool _propSpawned;
     private GameObject? _droppedProp;
 
-    private bool _prevLookDown;
-    private bool _prevCrouch;
-    private bool _prevGrab;
-    private float _progressLogTimer;
-    private float _liveLogTimer;
-    private bool _diagnosticsLogged;
+    public EasterEgg(Config cfg) => _cfg = cfg;
 
-    /// <summary>True once the gesture has fired (lava damage stops, animation
-    /// is running OR finished).</summary>
     public bool Triggered => _triggered;
-
-    /// <summary>True once the animation has fully played out and the 3D prop
-    /// has spawned. The UI is already hidden by this point.</summary>
     public bool Done => _propSpawned;
 
     public void Reset()
@@ -46,12 +23,6 @@ internal sealed class EasterEgg
         _triggered = false;
         _animTime = 0f;
         _propSpawned = false;
-        _prevLookDown = false;
-        _prevCrouch = false;
-        _prevGrab = false;
-        _progressLogTimer = 0f;
-        _liveLogTimer = 0f;
-        _diagnosticsLogged = false;
         if (_droppedProp != null)
         {
             Object.Destroy(_droppedProp);
@@ -64,76 +35,33 @@ internal sealed class EasterEgg
         if (_propSpawned) return;
         if (player == null) { _conditionTime = 0f; return; }
 
-        // Animation phase — runs after the gesture is confirmed.
         if (_triggered)
         {
             _animTime += dt;
             UpdateRipAnimation(_animTime, ui);
-            if (_animTime >= AnimDuration)
+            if (_animTime >= _cfg.EasterEggAnimDuration.Value)
                 SpawnDroppedHpBar(player, ui);
             return;
         }
 
-        // Gesture detection.
-        if (!_diagnosticsLogged)
-        {
-            _diagnosticsLogged = true;
-            Plugin.LogInfo("EasterEgg diag: " + GameRefs.DiagnoseEasterEgg(player));
-        }
-
         var look = GameRefs.LookForward(player);
-        var lookDown = look.y < LookDownThreshold;
+        var lookDown = look.y < _cfg.EasterEggLookDownThreshold.Value;
         var crouch = GameRefs.IsCrouching(player);
         var grab = GameRefs.BothHandsGrabbing(player);
         var all = lookDown && crouch && grab;
 
-        if (lookDown != _prevLookDown)
-            Plugin.LogInfo($"EasterEgg: lookDown -> {lookDown} (forward.y={look.y:F2}, threshold<{LookDownThreshold:F2})");
-        if (crouch != _prevCrouch)
-            Plugin.LogInfo($"EasterEgg: crouching -> {crouch}");
-        if (grab != _prevGrab)
-            Plugin.LogInfo($"EasterEgg: bothHandsGrabbing -> {grab}");
-        _prevLookDown = lookDown;
-        _prevCrouch = crouch;
-        _prevGrab = grab;
-
-        if (crouch)
-        {
-            _liveLogTimer += dt;
-            if (_liveLogTimer >= 1f)
-            {
-                _liveLogTimer = 0f;
-                Plugin.LogInfo($"EasterEgg live: look.y={look.y:F2} crouch={crouch} " +
-                               $"mouse0={UnityEngine.Input.GetMouseButton(0)} " +
-                               $"mouse1={UnityEngine.Input.GetMouseButton(1)} " +
-                               $"grabResult={grab}");
-            }
-        }
-        else _liveLogTimer = 0f;
-
         if (all)
         {
             _conditionTime += dt;
-            _progressLogTimer += dt;
-            if (_progressLogTimer >= 0.25f)
-            {
-                _progressLogTimer = 0f;
-                Plugin.LogInfo($"EasterEgg: holding gesture {_conditionTime:F2}/{HoldDuration:F1}s");
-            }
-            if (_conditionTime >= HoldDuration && !_triggered)
+            if (_conditionTime >= _cfg.EasterEggHoldDuration.Value && !_triggered)
             {
                 _triggered = true;
                 _animTime = 0f;
-                Plugin.LogInfo("EasterEgg: gesture COMPLETE — ripping HP bar out of the UI...");
+                Plugin.LogInfo("EasterEgg: gesture complete");
             }
         }
         else
-        {
-            if (_conditionTime > 0f)
-                Plugin.LogInfo($"EasterEgg: gesture broken (held {_conditionTime:F2}s).");
             _conditionTime = 0f;
-            _progressLogTimer = 0f;
-        }
     }
 
     // Where the bar travels to during the rip — roughly between the visible

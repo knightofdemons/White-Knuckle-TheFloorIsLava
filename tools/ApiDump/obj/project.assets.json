@@ -75,11 +75,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\TFS\\Documents\\projects\\White Knuckle Mod\\tools\\ApiDump\\ApiDump.csproj",
+      "projectUniqueName": "C:\\Users\\TFS\\Documents\\GitHub\\White-Knuckle-TheFloorIsLava\\tools\\ApiDump\\ApiDump.csproj",
       "projectName": "ApiDump",
-      "projectPath": "C:\\Users\\TFS\\Documents\\projects\\White Knuckle Mod\\tools\\ApiDump\\ApiDump.csproj",
+      "projectPath": "C:\\Users\\TFS\\Documents\\GitHub\\White-Knuckle-TheFloorIsLava\\tools\\ApiDump\\ApiDump.csproj",
       "packagesPath": "C:\\Users\\TFS\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\TFS\\Documents\\projects\\White Knuckle Mod\\tools\\ApiDump\\obj\\",
+      "outputPath": "C:\\Users\\TFS\\Documents\\GitHub\\White-Knuckle-TheFloorIsLava\\tools\\ApiDump\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\TFS\\AppData\\Roaming\\NuGet\\NuGet.Config"
